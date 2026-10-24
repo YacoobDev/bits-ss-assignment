@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turf Booking Microservices Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        darkBg: '#0b0f19',
+                        cardBg: '#111827',
+                        accentBlue: '#38bdf8',
+                        accentGreen: '#22c55e',
+                        accentRed: '#ef4444',
+                        accentOrange: '#f97316'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    </style>
+</head>
+<body class="bg-[#0b0f19] text-slate-200 font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-[#111827]/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50 px-6 py-3.5">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- App Title -->
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/30 text-emerald-400">
+                    <i class="fa-solid fa-cubes text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-white flex items-center gap-2">
+                        Turf Booking Microservices Studio
+                        <span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v2.1</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Distributed Transaction & Resiliency Orchestrator</p>
+                </div>
+            </div>
+
+            <!-- Health Status Bar (Dynamic Green/Red Badges) -->
+            <div class="flex items-center space-x-2 text-xs">
+                
+                <!-- Turf Service :8001 -->
+                <div id="badge-turf" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg border transition-all duration-300 bg-rose-500/10 border-rose-500/30 text-rose-400">
+                    <span id="dot-turf" class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span class="font-mono font-medium text-[11px]">Turf (:8001)</span>
+                </div>
+
+                <!-- Booking Service :8002 -->
+                <div id="badge-booking" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg border transition-all duration-300 bg-rose-500/10 border-rose-500/30 text-rose-400">
+                    <span id="dot-booking" class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span class="font-mono font-medium text-[11px]">Booking (:8002)</span>
+                </div>
+
+                <!-- Payment Service :8003 -->
+                <div id="badge-payment" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg border transition-all duration-300 bg-rose-500/10 border-rose-500/30 text-rose-400">
+                    <span id="dot-payment" class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span class="font-mono font-medium text-[11px]">Payment (:8003)</span>
+                </div>
+
+                <!-- Notification Service :8004 -->
+                <div id="badge-notification" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg border transition-all duration-300 bg-rose-500/10 border-rose-500/30 text-rose-400">
+                    <span id="dot-notification" class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span class="font-mono font-medium text-[11px]">Notification (:8004)</span>
+                </div>
+
+                <!-- Refresh Health Button -->
+                <button onclick="checkAllHealth()" title="Refresh Status" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition flex items-center justify-center">
+                    <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Controller Section -->
+        <div class="lg:col-span-7 flex flex-col space-y-6">
+
+            <!-- Mode Selector Tabs -->
+            <div class="flex space-x-1 bg-[#111827] p-1.5 rounded-xl border border-slate-800 text-xs font-medium">
+                <button id="tab-saga-btn" onclick="switchTab('saga')" class="flex-1 py-2 px-3 rounded-lg transition flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold shadow">
+                    <i class="fa-solid fa-diagram-next"></i> Saga Flow
+                </button>
+                <button id="tab-concurrency-btn" onclick="switchTab('concurrency')" class="flex-1 py-2 px-3 rounded-lg transition flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                    <i class="fa-solid fa-bolt"></i> Concurrency
+                </button>
+                <button id="tab-idempotency-btn" onclick="switchTab('idempotency')" class="flex-1 py-2 px-3 rounded-lg transition flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                    <i class="fa-solid fa-key"></i> Idempotency
+                </button>
+                <button id="tab-resilience-btn" onclick="switchTab('resilience')" class="flex-1 py-2 px-3 rounded-lg transition flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                    <i class="fa-solid fa-stopwatch"></i> Expiration
+                </button>
+            </div>
+
+            <!-- TAB 1: SAGA ORCHESTRATION WORKFLOW -->
+            <div id="tab-saga" class="bg-[#111827] rounded-xl p-5 border border-slate-800 space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h2 class="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-arrows-split-up-and-left text-accentBlue"></i>
+                            Saga Workflow Orchestration
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Cascading Venue & Turf selection executing multi-service transactions.</p>
+                    </div>
+                    <button onclick="fetchVenues()" class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-accentBlue rounded-lg border border-blue-500/30 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrows-rotate"></i> Reload Venues
+                    </button>
+                </div>
+
+                <!-- Cascading Selectors -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">1. Select Venue (via /api/v1/venues)</label>
+                        <select id="saga-venue-select" onchange="onVenueChanged()" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-accentBlue">
+                            <option value="">Fetching venues...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">2. Select Turf (via /listTurfs?venue_id)</label>
+                        <select id="saga-turf-select" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-accentBlue">
+                            <option value="">Select a venue first...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">User Identifier</label>
+                        <input type="text" id="saga-user-id" value="user_rahul_88" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Booking Date</label>
+                        <input type="date" id="saga-date" value="2026-11-01" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Time Slot</label>
+                        <input type="time" id="saga-time" value="18:00" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono">
+                    </div>
+                </div>
+
+                <!-- Execution Button -->
+                <button onclick="executeSagaWorkflow()" id="btn-run-saga" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 text-xs">
+                    <i class="fa-solid fa-play"></i> Execute Real Saga Transaction
+                </button>
+
+                <!-- Saga Stepper -->
+                <div class="space-y-2 pt-1 font-mono text-xs">
+                    <div id="saga-step-1" class="p-2.5 bg-slate-900/80 rounded-lg border border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span id="step1-badge" class="w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] font-bold">1</span>
+                            <div>
+                                <p class="text-slate-200 font-semibold text-[11px]">Fetch Turf Details</p>
+                                <p class="text-[10px] text-slate-500">GET http://localhost:8001/api/v1/turfs/{id}</p>
+                            </div>
+                        </div>
+                        <span id="step1-status" class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">IDLE</span>
+                    </div>
+
+                    <div id="saga-step-2" class="p-2.5 bg-slate-900/80 rounded-lg border border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span id="step2-badge" class="w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] font-bold">2</span>
+                            <div>
+                                <p class="text-slate-200 font-semibold text-[11px]">Reserve Slot (Pessimistic Hold)</p>
+                                <p class="text-[10px] text-slate-500">POST http://localhost:8002/api/v1/bookings/hold</p>
+                            </div>
+                        </div>
+                        <span id="step2-status" class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">IDLE</span>
+                    </div>
+
+                    <div id="saga-step-3" class="p-2.5 bg-slate-900/80 rounded-lg border border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span id="step3-badge" class="w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] font-bold">3</span>
+                            <div>
+                                <p class="text-slate-200 font-semibold text-[11px]">Charge Payment (Idempotent)</p>
+                                <p class="text-[10px] text-slate-500">POST http://localhost:8003/api/v1/payments/charge</p>
+                            </div>
+                        </div>
+                        <span id="step3-status" class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">IDLE</span>
+                    </div>
+
+                    <div id="saga-step-4" class="p-2.5 bg-slate-900/80 rounded-lg border border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span id="step4-badge" class="w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] font-bold">4</span>
+                            <div>
+                                <p class="text-slate-200 font-semibold text-[11px]">Confirm Booking</p>
+                                <p class="text-[10px] text-slate-500">POST http://localhost:8002/api/v1/bookings/{id}/confirm</p>
+                            </div>
+                        </div>
+                        <span id="step4-status" class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">IDLE</span>
+                    </div>
+
+                    <div id="saga-step-5" class="p-2.5 bg-slate-900/80 rounded-lg border border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span id="step5-badge" class="w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] font-bold">5</span>
+                            <div>
+                                <p class="text-slate-200 font-semibold text-[11px]">Dispatch Notification</p>
+                                <p class="text-[10px] text-slate-500">POST http://localhost:8004/api/v1/notifications/send</p>
+                            </div>
+                        </div>
+                        <span id="step5-status" class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">IDLE</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: CONCURRENCY GUARD -->
+            <div id="tab-concurrency" class="bg-[#111827] rounded-xl p-5 border border-slate-800 space-y-4 hidden">
+                <h2 class="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-users-rays text-amber-400"></i>
+                    Concurrency Lock Challenge
+                </h2>
+                <p class="text-xs text-slate-400">Dispatches 5 simultaneous requests to hold the same slot. Verifies pessimistic locking prevents double booking.</p>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Turf ID</label>
+                        <input type="number" id="cc-turf-id" value="1" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Date</label>
+                        <input type="date" id="cc-date" value="2026-11-01" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Start Time</label>
+                        <input type="time" id="cc-time" value="20:00" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-slate-200">
+                    </div>
+                </div>
+
+                <button onclick="fireConcurrentRequests()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg text-xs transition">
+                    Fire 5 Simultaneous Hold Requests
+                </button>
+
+                <div id="concurrency-results" class="space-y-2 font-mono text-xs">
+                    <div class="p-3 bg-slate-900 text-slate-500 text-center rounded border border-slate-800">
+                        Results will display here after execution.
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: IDEMPOTENCY KEY -->
+            <div id="tab-idempotency" class="bg-[#111827] rounded-xl p-5 border border-slate-800 space-y-4 hidden">
+                <h2 class="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-purple-400"></i>
+                    Payment Idempotency Challenge
+                </h2>
+                <p class="text-xs text-slate-400">Tests key reuse and payload validation at Payment Service (:8003).</p>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1">Idempotency-Key Header</label>
+                        <input type="text" id="idem-key-input" value="ik_auto_test_99" class="w-full bg-slate-900 border border-slate-800 rounded p-2 font-mono text-purple-300">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-400 mb-1">Booking ID</label>
+                            <input type="number" id="idem-booking-id" value="101" class="w-full bg-slate-900 border border-slate-800 rounded p-2 font-mono text-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">Amount (₹)</label>
+                            <input type="number" id="idem-amount" value="1200" class="w-full bg-slate-900 border border-slate-800 rounded p-2 font-mono text-slate-200">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 pt-1">
+                        <button onclick="sendIdempotencyRequest('original')" class="p-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium text-xs">
+                            1. First Charge
+                        </button>
+                        <button onclick="sendIdempotencyRequest('duplicate')" class="p-2 bg-slate-800 hover:bg-slate-700 border border-purple-500/40 text-purple-300 rounded font-medium text-xs">
+                            2. Re-send Key
+                        </button>
+                        <button onclick="sendIdempotencyRequest('mismatch')" class="p-2 bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 rounded font-medium text-xs">
+                            3. Mismatched
+                        </button>
+                    </div>
+                </div>
+
+                <div id="idem-output" class="p-3 bg-slate-900 rounded border border-slate-800 text-xs font-mono text-slate-400">
+                    Response output...
+                </div>
+            </div>
+
+            <!-- TAB 4: EXPIRATION countdown -->
+            <div id="tab-resilience" class="bg-[#111827] rounded-xl p-5 border border-slate-800 space-y-4 hidden">
+                <h2 class="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-stopwatch text-emerald-400"></i>
+                    Hold Expiration Countdown
+                </h2>
+
+                <div class="flex items-center justify-between p-4 bg-slate-900 rounded-lg border border-slate-800">
+                    <div>
+                        <p class="text-xs text-slate-400">Active Booking Lock</p>
+                        <p class="text-base font-mono font-bold text-slate-200 mt-0.5" id="timer-booking-id">NONE</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-400">Time Remaining</p>
+                        <p class="text-2xl font-mono font-bold text-emerald-400" id="timer-display">30.0s</p>
+                    </div>
+                </div>
+
+                <button onclick="startHoldExpirationTest()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-xs transition">
+                    Start Hold Expiration Timer
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Terminal Logs & Payload Inspector Column -->
+        <div class="lg:col-span-5 flex flex-col space-y-4">
+            
+            <!-- Network Console -->
+            <div class="bg-slate-950 rounded-xl border border-slate-800 flex flex-col h-[360px] shadow-2xl overflow-hidden">
+                <div class="bg-slate-900 px-4 py-2 border-b border-slate-800 flex items-center justify-between">
+                    <span class="text-xs font-mono font-medium text-slate-400"><i class="fa-solid fa-terminal mr-1.5 text-blue-400"></i> Network Stream</span>
+                    <button onclick="clearLogs()" class="text-[11px] text-slate-500 hover:text-slate-300">Clear</button>
+                </div>
+                <div id="console-logs" class="p-3 font-mono text-xs text-slate-300 overflow-y-auto flex-1 space-y-1 bg-slate-950">
+                    <div class="text-slate-600">// Real HTTP requests stream initialized...</div>
+                </div>
+            </div>
+
+            <!-- Payload Inspector -->
+            <div class="bg-[#111827] rounded-xl border border-slate-800 p-4 space-y-2 flex-1 flex flex-col min-h-[220px]">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-code text-slate-400 mr-1.5"></i> Response Inspector</span>
+                    <span class="text-[10px] font-mono text-slate-500" id="inspect-status">Status: ---</span>
+                </div>
+                <div class="flex-1 bg-slate-950 p-3 rounded border border-slate-800 overflow-y-auto">
+                    <pre id="inspect-json" class="font-mono text-[11px] text-emerald-400 whitespace-pre-wrap">{ "info": "Execute an action to view HTTP response details" }</pre>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Execution Logic Script -->
+    <script>
+        const PORTS = {
+            TURF: 'http://localhost:8001',
+            BOOKING: 'http://localhost:8002',
+            PAYMENT: 'http://localhost:8003',
+            NOTIFICATION: 'http://localhost:8004'
+        };
+
+        function switchTab(tabId) {
+            ['saga', 'concurrency', 'idempotency', 'resilience'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`tab-${t}-btn`);
+                if (t === tabId) {
+                    el.classList.remove('hidden');
+                    btn.className = "flex-1 py-2 px-3 rounded-lg transition flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold shadow";
+                } else {
+                    el.classList.add('hidden');
+                    btn.className = "flex-1 py-2 px-3 rounded-lg transition flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800";
+                }
+            });
+        }
+
+        function log(service, message, type = 'info') {
+            const consoleEl = document.getElementById('console-logs');
+            const time = new Date().toLocaleTimeString();
+            let color = 'text-slate-300';
+            if (type === 'success') color = 'text-emerald-400';
+            if (type === 'error') color = 'text-rose-400';
+            if (type === 'warn') color = 'text-amber-400';
+
+            const logLine = document.createElement('div');
+            logLine.className = `leading-relaxed text-[11px] ${color}`;
+            logLine.innerHTML = `<span class="text-slate-600">[${time}]</span> <span class="font-bold text-slate-400">[${service}]</span> ${message}`;
+            consoleEl.appendChild(logLine);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('console-logs').innerHTML = '<div class="text-slate-600">// Logs cleared.</div>';
+        }
+
+        function inspectResponse(status, json) {
+            document.getElementById('inspect-status').innerText = `Status: ${status}`;
+            document.getElementById('inspect-json').innerText = typeof json === 'string' ? json : JSON.stringify(json, null, 2);
+        }
+
+        // Safe fetch with fallback handling for local cross-origin file execution
+        async function safeFetch(url, options = {}) {
+            try {
+                const res = await fetch(url, options);
+                let data;
+                const contentType = res.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await res.json();
+                } else {
+                    data = await res.text();
+                }
+                return { ok: res.ok, status: res.status, data };
+            } catch (err) {
+                return { ok: false, status: 0, data: { error: "Connection Refused / Service Offline", details: err.message, url } };
+            }
+        }
+
+        // Dynamically Updates Top Bar Badges (Green on 200 OK, Red on Error)
+        function updateBadgeUI(serviceKey, isOnline, statusMsg) {
+            const badge = document.getElementById(`badge-${serviceKey}`);
+            const dot = document.getElementById(`dot-${serviceKey}`);
+
+            if (isOnline) {
+                badge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg border transition-all duration-300 bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+                dot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]";
+            } else {
+                badge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-lg border transition-all duration-300 bg-rose-500/10 border-rose-500/30 text-rose-400";
+                dot.className = "w-2 h-2 rounded-full bg-rose-500 animate-pulse";
+            }
+        }
+
+        // Check Health of all 4 Microservices
+        async function checkAllHealth() {
+            const services = [
+                { key: 'turf', url: `${PORTS.TURF}/health` },
+                { key: 'booking', url: `${PORTS.BOOKING}/health` },
+                { key: 'payment', url: `${PORTS.PAYMENT}/health` },
+                { key: 'notification', url: `${PORTS.NOTIFICATION}/health` }
+            ];
+
+            log('HEALTH', 'Checking service status across ports 8001-8004...', 'info');
+
+            for (const s of services) {
+                const res = await safeFetch(s.url);
+                updateBadgeUI(s.key, res.ok, res.status);
+            }
+        }
+
+        // Fetch Venues on Load
+        async function fetchVenues() {
+            log('TURF_SERVICE', 'GET http://localhost:8001/api/v1/venues', 'info');
+            const venueSelect = document.getElementById('saga-venue-select');
+            const turfSelect = document.getElementById('saga-turf-select');
+            
+            venueSelect.innerHTML = '<option value="">Fetching venues...</option>';
+            turfSelect.innerHTML = '<option value="">Select a venue first...</option>';
+
+            const res = await safeFetch(`${PORTS.TURF}/api/v1/venues`);
+            inspectResponse(res.status, res.data);
+
+            if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+                venueSelect.innerHTML = '<option value="">-- Select a Venue --</option>';
+                res.data.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.id;
+                    opt.innerText = `${v.name} (${v.city})`;
+                    venueSelect.appendChild(opt);
+                });
+                log('TURF_SERVICE', `Successfully loaded ${res.data.length} venues.`, 'success');
+                
+                // Auto-select first venue
+                venueSelect.value = res.data[0].id;
+                await fetchTurfsForVenue(res.data[0].id);
+            } else {
+                venueSelect.innerHTML = '<option value="">No Venues Available / Offline</option>';
+                log('TURF_SERVICE', `Could not fetch venues. ${res.data.error || ''}`, 'warn');
+            }
+        }
+
+        async function onVenueChanged() {
+            const venueId = document.getElementById('saga-venue-select').value;
+            if (venueId) {
+                await fetchTurfsForVenue(venueId);
+            } else {
+                document.getElementById('saga-turf-select').innerHTML = '<option value="">Select a venue first...</option>';
+            }
+        }
+
+        // Fetch Turfs for selected Venue via /listTurfs?venue_id=X
+        async function fetchTurfsForVenue(venueId) {
+            log('TURF_SERVICE', `GET http://localhost:8001/api/v1/listTurfs?venue_id=${venueId}`, 'info');
+            const turfSelect = document.getElementById('saga-turf-select');
+            turfSelect.innerHTML = '<option value="">Fetching turfs...</option>';
+
+            const res = await safeFetch(`${PORTS.TURF}/api/v1/listTurfs?venue_id=${venueId}`);
+            inspectResponse(res.status, res.data);
+
+            if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+                turfSelect.innerHTML = '';
+                res.data.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.id;
+                    opt.innerText = `${t.name} (${t.sport_type}) - ₹${t.hourly_rate}/hr`;
+                    turfSelect.appendChild(opt);
+                });
+                log('TURF_SERVICE', `Loaded ${res.data.length} turfs for venue ${venueId}.`, 'success');
+            } else {
+                turfSelect.innerHTML = '<option value="">No turfs for this venue</option>';
+                log('TURF_SERVICE', `No turfs found for venue_id ${venueId}`, 'warn');
+            }
+        }
+
+        function updateStepUI(stepNum, state, statusText) {
+            const badge = document.getElementById(`step${stepNum}-badge`);
+            const status = document.getElementById(`step${stepNum}-status`);
+
+            if (state === 'pending') {
+                badge.className = "w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-[10px] font-bold animate-pulse";
+                status.className = "px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                status.innerText = "RUNNING";
+            } else if (state === 'success') {
+                badge.className = "w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold";
+                status.className = "px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                status.innerText = statusText || "200 OK";
+            } else if (state === 'failed') {
+                badge.className = "w-5 h-5 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-[10px] font-bold";
+                status.className = "px-2 py-0.5 rounded text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                status.innerText = statusText || "FAILED";
+            }
+        }
+
+        // Saga Workflow Execution
+        async function executeSagaWorkflow() {
+            const turfId = document.getElementById('saga-turf-select').value;
+            const userId = document.getElementById('saga-user-id').value || 'user_rahul_88';
+            const date = document.getElementById('saga-date').value;
+            const time = document.getElementById('saga-time').value;
+
+            if (!turfId) {
+                alert("Please select a venue and turf first!");
+                return;
+            }
+
+            const correlationId = 'cid_' + Math.random().toString(36).substring(2, 10);
+            const idempotencyKey = 'ik_auto_' + Math.random().toString(36).substring(2, 7);
+
+            log('ORCHESTRATOR', `Starting Saga Flow | Correlation ID: ${correlationId}`, 'info');
+
+            for (let i = 1; i <= 5; i++) updateStepUI(i, 'idle', 'IDLE');
+
+            // STEP 1: Fetch Turf
+            updateStepUI(1, 'pending');
+            const step1 = await safeFetch(`${PORTS.TURF}/api/v1/turfs/${turfId}`);
+            if (!step1.ok) {
+                updateStepUI(1, 'failed', step1.status === 0 ? 'OFFLINE' : step1.status);
+                inspectResponse(step1.status, step1.data);
+                return;
+            }
+            updateStepUI(1, 'success');
+
+			// Extract the dynamic hourly rate from the fetched turf metadata
+            const turfRate = step1.data.hourly_rate || 1000.0;
+
+            // Calculate a default end time (1 hour after start time)
+            const [hours, minutes] = time.split(':');
+            const endHour = String(parseInt(hours) + 1).padStart(2, '0');
+            const endTime = `${endHour}:${minutes}:00`;
+            // STEP 2: Reserve Slot
+            updateStepUI(2, 'pending');
+			const step2 = await safeFetch(`${PORTS.BOOKING}/api/v1/bookings/hold`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Correlation-ID': correlationId },
+                body: JSON.stringify({ 
+                    turf_id: parseInt(turfId), 
+                    user_id: userId, 
+                    booking_date: date, 
+                    start_time: time + ":00",
+                    end_time: endTime,
+                    amount: turfRate
+                })
+            });
+            if (!step2.ok) {
+                updateStepUI(2, 'failed', step2.status === 0 ? 'OFFLINE' : step2.status);
+                inspectResponse(step2.status, step2.data);
+                return;
+            }
+            updateStepUI(2, 'success');
+            const bookingId = step2.data.booking_id || step2.data.id || '101';
+
+            // STEP 3: Charge Payment
+            updateStepUI(3, 'pending');
+            const step3 = await safeFetch(`${PORTS.PAYMENT}/api/v1/payments/charge`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Correlation-ID': correlationId, 'Idempotency-Key': idempotencyKey },
+                body: JSON.stringify({ booking_id: bookingId, user_id: userId, amount: step1.data.hourly_rate || 1200.0 })
+            });
+            if (!step3.ok) {
+                updateStepUI(3, 'failed', step3.status === 0 ? 'OFFLINE' : step3.status);
+                inspectResponse(step3.status, step3.data);
+                return;
+            }
+            updateStepUI(3, 'success');
+
+            // Extract payment reference from step 3 response (or fallback)
+            const paymentRef = step3.data.payment_reference || step3.data.transaction_id || "pay_ref_" + Math.random().toString(36).substring(2, 9);
+
+            // STEP 4: Confirm Booking with payment_reference
+            updateStepUI(4, 'pending');
+            const step4 = await safeFetch(`${PORTS.BOOKING}/api/v1/bookings/${bookingId}/confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Correlation-ID': correlationId },
+                body: JSON.stringify({ 
+                    status: "CONFIRMED",
+                    payment_reference: paymentRef 
+                })
+            });
+            if (!step4.ok) {
+                updateStepUI(4, 'failed', step4.status === 0 ? 'OFFLINE' : step4.status);
+                inspectResponse(step4.status, step4.data);
+                return;
+            }
+            updateStepUI(4, 'success');
+
+            // STEP 5: Notification
+            updateStepUI(5, 'pending');
+            const step5 = await safeFetch(`${PORTS.NOTIFICATION}/api/v1/notifications/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Correlation-ID': correlationId },
+                body: JSON.stringify({ user_id: userId, booking_id: bookingId, channel: 'EMAIL', recipient: 'user@example.com', message: 'Booking confirmed!' })
+            });
+            updateStepUI(5, step5.ok ? 'success' : 'failed');
+
+            inspectResponse(200, { saga_status: "COMPLETED", correlation_id: correlationId, booking_id: bookingId });
+            log('ORCHESTRATOR', `Saga Completed Successfully!`, 'success');
+        }
+
+        // Concurrency Challenge Logic
+        async function fireConcurrentRequests() {
+            const turfId = document.getElementById('cc-turf-id').value;
+            const date = document.getElementById('cc-date').value;
+            const time = document.getElementById('cc-time').value;
+            const resultsContainer = document.getElementById('concurrency-results');
+
+            resultsContainer.innerHTML = '<div class="text-amber-400 animate-pulse font-mono">Firing 5 parallel POST requests...</div>';
+
+            const requests = Array.from({ length: 5 }, (_, i) => {
+                return safeFetch(`${PORTS.BOOKING}/api/v1/bookings/hold`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ turf_id: parseInt(turfId), user_id: `user_${i+1}`, booking_date: date, start_time: time + ":00" })
+                });
+            });
+
+            const responses = await Promise.all(requests);
+            resultsContainer.innerHTML = '';
+
+            responses.forEach((res, i) => {
+                const item = document.createElement('div');
+                if (res.status === 200 || res.status === 201) {
+                    item.className = "p-2 bg-emerald-950/60 border border-emerald-500/40 rounded flex items-center justify-between text-emerald-300";
+                    item.innerHTML = `<span>Req #${i+1}: SUCCESS (200)</span> <span class="bg-emerald-500/20 px-2 py-0.5 rounded text-[10px]">LOCK ACQUIRED</span>`;
+                } else if (res.status === 409) {
+                    item.className = "p-2 bg-rose-950/60 border border-rose-500/40 rounded flex items-center justify-between text-rose-300";
+                    item.innerHTML = `<span>Req #${i+1}: CONFLICT (409)</span> <span class="bg-rose-500/20 px-2 py-0.5 rounded text-[10px]">BLOCKED</span>`;
+                } else {
+                    item.className = "p-2 bg-slate-900 border border-slate-800 rounded text-slate-400";
+                    item.innerHTML = `<span>Req #${i+1}: Status ${res.status}</span>`;
+                }
+                resultsContainer.appendChild(item);
+            });
+            inspectResponse(200, responses.map(r => ({ status: r.status, payload: r.data })));
+        }
+
+        // Idempotency Challenge Logic
+        async function sendIdempotencyRequest(mode) {
+            let key = document.getElementById('idem-key-input').value;
+            let bookingId = parseInt(document.getElementById('idem-booking-id').value);
+            let amount = parseFloat(document.getElementById('idem-amount').value);
+
+            if (mode === 'mismatch') amount += 500;
+
+            const res = await safeFetch(`${PORTS.PAYMENT}/api/v1/payments/charge`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
+                body: JSON.stringify({ booking_id: bookingId, user_id: 'user_test', amount: amount })
+            });
+
+            document.getElementById('idem-output').innerText = `[HTTP ${res.status}]\n` + JSON.stringify(res.data, null, 2);
+            inspectResponse(res.status, res.data);
+        }
+
+        // Timer Challenge Logic
+        let countdownInterval = null;
+        async function startHoldExpirationTest() {
+            const res = await safeFetch(`${PORTS.BOOKING}/api/v1/bookings/hold`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ turf_id: 1, user_id: 'user_timer', booking_date: '2026-11-01', start_time: '22:00:00' })
+            });
+
+            const bookingId = res.ok ? (res.data.id || 'BK-EXPIRE-101') : 'BK-LOCAL';
+            document.getElementById('timer-booking-id').innerText = bookingId;
+
+            let remaining = 30.0;
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            countdownInterval = setInterval(() => {
+                remaining -= 0.1;
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('timer-display').innerText = "0.0s (EXPIRED)";
+                    document.getElementById('timer-display').className = "text-2xl font-mono font-bold text-rose-500 animate-pulse";
+                } else {
+                    document.getElementById('timer-display').innerText = `${remaining.toFixed(1)}s`;
+                }
+            }, 100);
+        }
+
+        // Initial Load
+        window.onload = function() {
+            checkAllHealth();
+            fetchVenues();
+        };
+    </script>
+</body>
+</html>
