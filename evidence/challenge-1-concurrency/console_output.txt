@@ -1,0 +1,38 @@
+============================================================
+ STARTING CONCURRENCY STRESS TEST (20 Simultaneous Requests)
+ Target Slot: Turf ID 1 | 2026-10-24 @ 18:00:00
+============================================================
+
+Req #    | Status Code  | Response Detail / Message
+-----------------------------------------------------------------
+Req #1    | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #2    | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #3    | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #4    | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #5    | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #6    | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #7    | 201 SUCCESS   | SUCCESS -> Booking ID: 1
+Req #8    | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #9    | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #10   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #11   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #12   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #13   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #14   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #15   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #16   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #17   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #18   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #19   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+Req #20   | 409 CONFLICT  | REJECTED -> {'error_code': 'SLOT_ALREADY_BOOKED', 'message': 'The selected slot is currently held or already confirmed by another user.'}
+
+============================================================
+ TEST RESULTS SUMMARY
+============================================================
+ Total Requests Fired : 20
+ Successful (200/201) : 1  (Expected: 1)
+ Conflict (409)       : 19 (Expected: 19)
+ Other / Errors       : 0
+============================================================
+
+[SUCCESS] TEST PASSED: Zero double-booking confirmed under race conditions!
