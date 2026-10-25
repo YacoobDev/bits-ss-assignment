@@ -1,16 +1,10 @@
-# Challenge 2: Idempotency Implementation
+# Challenge 2: Idempotency Implementation & Live HTTP Test Suite
 
 ## Overview
-This implementation guarantees that unsafe HTTP requests (`POST`, `PUT`, `PATCH`, `DELETE`) accompanied by an `Idempotency-Key` header are safely executed exactly once.
-
-## Key Features
-1. **Payload Fingerprinting**: Computes a SHA-256 hash of the HTTP method, request path, and body. If a key is reused with a different payload, a **409 Conflict** is returned.
-2. **Concurrent Request Protection**: Leverages database unique constraints (`idempotency_key` unique index) to handle simultaneous identical requests safely without race conditions or duplicate side effects.
-3. **Response Replay**: Subsequent sequential or concurrent requests with matching keys return the identical cached response status and payload.
-4. **Automated Logging**: Test execution writes real-time logs directly to `response_logs.txt`.
+This package contains `test_idempotency.py` updated with the required schema fields (`address` and `city`) for `/api/v1/venues`. It performs live HTTP API calls (`httpx`) against `http://localhost:8002/api/v1/venues` and logs all actions to `response_logs.txt`.
 
 ## Running Tests
-Execute pytest against the idempotency test suite:
+Execute the test script against your running `turf-service`:
 ```bash
-pytest challenge-2-idempotency/test_idempotency.py
+python challenge-2-idempotency/test_idempotency.py
 ```

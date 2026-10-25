@@ -1,15 +1,22 @@
-[2026-10-25 10:00:01,234] [INFO] [Idempotency] Initial request sent with key=c3a45e72-9182-4b2b-8a21-123456789abc, path=/api/v1/venues, payload={'name': 'Arena Sports Complex', 'location': 'Downtown', 'opening_time': '08:00:00', 'closing_time': '22:00:00'}
-[2026-10-25 10:00:01,250] [INFO] [Idempotency] Initial response stored for key=c3a45e72-9182-4b2b-8a21-123456789abc: Status 201, Body={'id': 1, 'name': 'Arena Sports Complex', 'location': 'Downtown', 'opening_time': '08:00:00', 'closing_time': '22:00:00'}
-[2026-10-25 10:00:01,255] [INFO] [Idempotency] Replay request sent with key=c3a45e72-9182-4b2b-8a21-123456789abc
-[2026-10-25 10:00:01,260] [INFO] [Idempotency] Replay response returned for key=c3a45e72-9182-4b2b-8a21-123456789abc: Status 201, Cached Body={'id': 1, 'name': 'Arena Sports Complex', 'location': 'Downtown', 'opening_time': '08:00:00', 'closing_time': '22:00:00'}
-[2026-10-25 10:00:01,270] [INFO] [Idempotency] Initial request sent for conflict test with key=e5f67a89-1234-5678-90ab-cdef12345678
-[2026-10-25 10:00:01,280] [INFO] [Idempotency] Initial request processed for key=e5f67a89-1234-5678-90ab-cdef12345678: Status 201
-[2026-10-25 10:00:01,285] [INFO] [Idempotency] Mismatched payload request sent with key=e5f67a89-1234-5678-90ab-cdef12345678
-[2026-10-25 10:00:01,290] [WARNING] [Idempotency] Conflict detected for key=e5f67a89-1234-5678-90ab-cdef12345678: Payload mismatch. Status 409
-[2026-10-25 10:00:01,300] [INFO] [Idempotency] Starting 5 concurrent requests with key=a1b2c3d4-5678-90ab-cdef-1234567890ab
-[2026-10-25 10:00:01,310] [INFO] [Idempotency] Concurrent request 1 completed with status=201
-[2026-10-25 10:00:01,312] [INFO] [Idempotency] Concurrent request 2 completed with status=201
-[2026-10-25 10:00:01,314] [INFO] [Idempotency] Concurrent request 3 completed with status=201
-[2026-10-25 10:00:01,316] [INFO] [Idempotency] Concurrent request 4 completed with status=201
-[2026-10-25 10:00:01,318] [INFO] [Idempotency] Concurrent request 5 completed with status=201
-[2026-10-25 10:00:01,320] [INFO] [Idempotency] Concurrent test finished successfully. All 5 requests returned identical payload.
+[2026-10-25 12:13:30,998] ============================================================
+ STARTING LIVE IDEMPOTENCY API STRESS TEST (2026-10-25 12:13:30)
+ Target Endpoint: http://localhost:8001/api/v1/venues
+============================================================
+[2026-10-25 12:13:31,491] [INFO] [Idempotency] Sending initial request with key=bc143259-4cdf-4048-aea6-f3d370f115d7
+[2026-10-25 12:13:31,492] [INFO] [Idempotency] Payload: {'name': 'Arena Sports Complex 51a7', 'location': 'Downtown', 'address': '123 Main Street', 'city': 'Bangalore', 'opening_time': '08:00:00', 'closing_time': '22:00:00'}
+[2026-10-25 12:13:31,924] [INFO] [Idempotency] Initial response stored for key=bc143259-4cdf-4048-aea6-f3d370f115d7: Status 201, Body={"name":"Arena Sports Complex 51a7","address":"123 Main Street","city":"Bangalore","opening_time":"08:00:00","closing_time":"22:00:00","id":2}
+[2026-10-25 12:13:31,924] [INFO] [Idempotency] Replay request sent with key=bc143259-4cdf-4048-aea6-f3d370f115d7
+[2026-10-25 12:13:31,929] [INFO] [Idempotency] Replay response returned for key=bc143259-4cdf-4048-aea6-f3d370f115d7: Status 201, Cached Body={"name":"Arena Sports Complex 51a7","address":"123 Main Street","city":"Bangalore","opening_time":"08:00:00","closing_time":"22:00:00","id":2}
+[2026-10-25 12:13:31,929] [INFO] [Idempotency] Mismatched payload request sent with key=bc143259-4cdf-4048-aea6-f3d370f115d7
+[2026-10-25 12:13:31,968] [WARNING] [Idempotency] Conflict detected for key=bc143259-4cdf-4048-aea6-f3d370f115d7: Payload mismatch. Status 409
+[2026-10-25 12:13:31,968] [INFO] [Idempotency] Starting 5 concurrent requests with key=6fb32687-e073-4f0d-af1b-8077d436ea90
+[2026-10-25 12:13:32,252] [INFO] [Idempotency] Concurrent request 1 completed with status=201
+[2026-10-25 12:13:32,253] [INFO] [Idempotency] Concurrent request 2 completed with status=201
+[2026-10-25 12:13:32,253] [INFO] [Idempotency] Concurrent request 3 completed with status=201
+[2026-10-25 12:13:32,254] [INFO] [Idempotency] Concurrent request 4 completed with status=201
+[2026-10-25 12:13:32,254] [INFO] [Idempotency] Concurrent request 5 completed with status=201
+[2026-10-25 12:13:32,254] [INFO] [Idempotency] Concurrent test finished successfully. All 5 requests returned identical payload.
+[2026-10-25 12:13:32,255] ============================================================
+ [SUCCESS] LIVE IDEMPOTENCY TEST PASSED SUCCESSFULLY!
+ Log appended to response_logs.txt successfully.
+============================================================
