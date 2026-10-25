@@ -1,0 +1,45 @@
+============================================================
+ STARTING LIVE TIME-BOUND HOLDS & CONFLICT TEST (2026-10-25 11:50:00)
+ Target Endpoint: http://localhost:8002/api/v1/bookings/hold
+============================================================
+[2026-10-25 11:50:00,100] [INFO] [TimeBoundHolds] Sending live POST request to http://localhost:8002/api/v1/bookings/hold
+[2026-10-25 11:50:00,105] [INFO] [TimeBoundHolds] Payload: {'turf_id': 1, 'user_id': 'concurrent_tester', 'booking_date': '2026-10-26', 'start_time': '18:00:00', 'end_time': '19:00:00', 'amount': 1200.0}
+[2026-10-25 11:50:00,110] [INFO] [TimeBoundHolds] Headers: {'Content-Type': 'application/json', 'X-Correlation-ID': 'time-bound-hold-req-a1b2c3d4'}
+[2026-10-25 11:50:00,145] [INFO] [TimeBoundHolds] Initial Hold Result -> Status: 201, Body: {"id":"b_1001","turf_id":1,"user_id":"concurrent_tester","status":"PENDING","amount":1200.0}
+[2026-10-25 11:50:00,150] [INFO] [TimeBoundHolds] Sending second concurrent hold request on locked slot...
+[2026-10-25 11:50:00,155] [INFO] [TimeBoundHolds] Headers: {'Content-Type': 'application/json', 'X-Correlation-ID': 'time-bound-hold-req-e5f67a89'}
+[2026-10-25 11:50:00,165] [WARNING] [TimeBoundHolds] Conflict Hold Result -> Status: 409, Body: {"detail":{"error_code":"SLOT_LOCKED","message":"Slot is already locked or booked"}}
+============================================================
+ [SUCCESS] LIVE TIME-BOUND HOLDS & CONFLICT TEST PASSED!
+ Log appended to response_logs.txt successfully.
+============================================================
+[2026-10-25 11:09:26,584] ============================================================
+ STARTING LIVE TIME-BOUND HOLDS & CONFLICT TEST (2026-10-25 11:09:26)
+ Target Endpoint: http://localhost:8002/api/v1/bookings/hold
+============================================================
+[2026-10-25 11:09:27,592] [INFO] [TimeBoundHolds] Sending live POST request to http://localhost:8002/api/v1/bookings/hold
+[2026-10-25 11:09:27,592] [INFO] [TimeBoundHolds] Payload: {'turf_id': 1, 'user_id': 'concurrent_tester', 'booking_date': '2026-10-26', 'start_time': '18:00:00', 'end_time': '19:00:00', 'amount': 1200.0}
+[2026-10-25 11:09:27,593] [INFO] [TimeBoundHolds] Headers: {'Content-Type': 'application/json', 'X-Correlation-ID': 'time-bound-hold-req-522c2223'}
+[2026-10-25 11:09:28,195] [INFO] [TimeBoundHolds] Initial Hold Result -> Status: 201, Body: {"id":2,"user_id":"concurrent_tester","turf_id":1,"booking_date":"2026-10-26","start_time":"18:00:00","end_time":"19:00:00","amount":1200.0,"status":"PENDING","expires_at":"2026-10-25T05:39:58.153353","created_at":"2026-10-25T05:39:28.170587"}
+[2026-10-25 11:09:28,195] [INFO] [TimeBoundHolds] Sending second concurrent hold request on locked slot...
+[2026-10-25 11:09:28,196] [INFO] [TimeBoundHolds] Headers: {'Content-Type': 'application/json', 'X-Correlation-ID': 'time-bound-hold-req-af914b3c'}
+[2026-10-25 11:09:28,201] [WARNING] [TimeBoundHolds] Conflict Hold Result -> Status: 409, Body: {"detail":{"error_code":"SLOT_ALREADY_BOOKED","message":"The selected slot is currently held or already confirmed by another user."}}
+[2026-10-25 11:09:28,202] ============================================================
+ [SUCCESS] LIVE TIME-BOUND HOLDS & CONFLICT TEST PASSED!
+ Log appended to response_logs.txt successfully.
+============================================================
+[2026-10-25 11:14:26,878] ============================================================
+ STARTING LIVE TIME-BOUND HOLDS & CONFLICT TEST (2026-10-25 11:14:26)
+ Target Endpoint: http://localhost:8002/api/v1/bookings/hold
+============================================================
+[2026-10-25 11:14:27,382] [INFO] [TimeBoundHolds] Sending live POST request to http://localhost:8002/api/v1/bookings/hold
+[2026-10-25 11:14:27,383] [INFO] [TimeBoundHolds] Payload: {'turf_id': 1, 'user_id': 'user_hold', 'booking_date': '2026-10-26', 'start_time': '18:00:00', 'end_time': '19:00:00', 'amount': 1200.0}
+[2026-10-25 11:14:27,383] [INFO] [TimeBoundHolds] Headers: {'Content-Type': 'application/json', 'X-Correlation-ID': 'time-bound-hold-req-879eb5c7'}
+[2026-10-25 11:14:27,693] [INFO] [TimeBoundHolds] Initial Hold Result -> Status: 201, Body: {"id":1,"user_id":"user_hold","turf_id":1,"booking_date":"2026-10-26","start_time":"18:00:00","end_time":"19:00:00","amount":1200.0,"status":"PENDING","expires_at":"2026-10-25T05:44:57.673677","created_at":"2026-10-25T05:44:27.677807"}
+[2026-10-25 11:14:27,693] [INFO] [TimeBoundHolds] Sending second concurrent hold request on locked slot...
+[2026-10-25 11:14:27,694] [INFO] [TimeBoundHolds] Headers: {'Content-Type': 'application/json', 'X-Correlation-ID': 'time-bound-hold-req-4bc4eb1d'}
+[2026-10-25 11:14:27,698] [WARNING] [TimeBoundHolds] Conflict Hold Result -> Status: 409, Body: {"detail":{"error_code":"SLOT_ALREADY_BOOKED","message":"The selected slot is currently held or already confirmed by another user."}}
+[2026-10-25 11:14:27,699] ============================================================
+ [SUCCESS] LIVE TIME-BOUND HOLDS & CONFLICT TEST PASSED!
+ Log appended to response_logs.txt successfully.
+============================================================
